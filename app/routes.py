@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
+from bs4 import BeautifulSoup
+from pip._vendor import requests
+import re
 
 app = Flask(__name__)
 
@@ -23,11 +26,22 @@ def main():
         index = request.form['index']
 
         text = Article(text=index)
-        print(text)
         db.session.add(text)
         db.session.commit()
 
-    return render_template("main.html", index=index)
+    topic_list = []
+    page = 'https://en.wikipedia.org/wiki/Main_Page'
+    r = requests.get(page)
+    soup = BeautifulSoup(r.text, 'html.parser')
+    for i in soup.find(id="mp-portals"):
+        if i.find('a') != -1:
+            topic = i.find('a')
+            topic = topic['title']
+            topic_list.append(topic[7:])
+    topic_list.pop()
+    print(topic_list)
+
+    return render_template("main.html", index=index, topic_list=topic_list)
 
 
 @app.route('/result')

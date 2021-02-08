@@ -17,16 +17,17 @@
 
         <form action="/" method="POST">
 
-        <input type="submit" name="index" class="btn btn-secondary" value="The arts">
-        <input type="submit" name="index" class="btn btn-secondary"  value="History">
-        <input type="submit" name="index" class="btn btn-secondary" value="Society">
+        {% for i in topic_list %}
+            <input type="submit" name="index" class="btn btn-secondary" value="{{ i }}">
+        {% endfor %}
 
-             <a class="btn btn-success" type="submit" href='/result'>Get article! TEST</a>
     </form>
 
     {% if index %}
        <h2> {{ index }} </h2>
     {% endif %}
+
+
 
     </div>
 
