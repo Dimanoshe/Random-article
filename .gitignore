@@ -1,0 +1,7 @@
+.idea/
+venv/
+*.bd
+__pycache__/
+*.py[cod]
+*.pyc
+__pycache__/
