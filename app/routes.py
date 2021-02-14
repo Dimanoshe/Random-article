@@ -2,7 +2,7 @@ from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from bs4 import BeautifulSoup
 from pip._vendor import requests
-import re
+from random import choice
 
 app = Flask(__name__)
 
@@ -28,26 +28,64 @@ def main():
         text = Article(text=index)
         db.session.add(text)
         db.session.commit()
-
+    #print(type(index))
     topic_list = []
-    page = 'https://en.wikipedia.org/wiki/Main_Page'
-    r = requests.get(page)
-    soup = BeautifulSoup(r.text, 'html.parser')
+    page_topic = 'https://en.wikipedia.org/wiki/Main_Page'
+    r_topic = requests.get(page_topic)
+    soup = BeautifulSoup(r_topic.text, 'html.parser')
     for i in soup.find(id="mp-portals"):
         if i.find('a') != -1:
             topic = i.find('a')
             topic = topic['title']
             topic_list.append(topic[7:])
     topic_list.pop()
-    print(topic_list)
+
+    article_list = []
+    page_article = 'https://en.wikipedia.org/wiki/Portal:%s/Recognized_content' % index
+    print(page_article)
+    r_article = requests.get(page_article)
+    soup = BeautifulSoup(r_article.text, 'html.parser')
+    cont = soup.find_all("div", {"class": "div-col"})
+    for i in cont[0].find_all('a'):
+        name_artlicle = i['title']
+        article_list.append(name_artlicle)
+    #print(article_list)
+    article = choice(article_list)
+    #print(article)
+    article = article.split(" ")
+    article = '_'.join(article)
+    #print(article)
+
+
+    article_page = 'https://en.wikipedia.org/wiki/%s' % article
+    #print(article_page)
+    r_article_text = requests.get(article_page)
+    soup = BeautifulSoup(r_article_text.text, 'html.parser')
+    cont = []
+    for link in soup.find_all("div", {"class": "mw-parser-output"}, 'p'):
+        for i in link.find_all('p'):
+            i = i.get_text().replace('\n', '')
+            for del_num in range(100):
+                i = i.replace('[{}]'.format(del_num), '')
+            if i != '' and i[-1] != '.':
+                i = i[:-1] + '.'
+            cont.append(i)
+    cont = '$$$'.join(cont)
+    text = Article(text=cont)
+    db.session.add(text)
+    db.session.commit()
 
     return render_template("main.html", index=index, topic_list=topic_list)
 
 
 @app.route('/result')
 def result():
-    text = Article.query.all()
-    return render_template("result.html", index=text[-1])
+
+    text = Article.query.all()[-1]
+    text = str(text.text).split('$$$')
+    #print(text)
+
+    return render_template("result.html", index=text)
 
 
 if __name__ == '__main__':
