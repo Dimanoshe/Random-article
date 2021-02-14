@@ -46,6 +46,11 @@ def main():
     r_article = requests.get(page_article)
     soup = BeautifulSoup(r_article.text, 'html.parser')
     cont = soup.find_all("div", {"class": "div-col"})
+    print(len(cont))
+
+    if len(cont) == 0:
+        return render_template("main.html", index=index, topic_list=topic_list)
+
     for i in cont[0].find_all('a'):
         name_artlicle = i['title']
         article_list.append(name_artlicle)
